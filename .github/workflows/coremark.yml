@@ -1,0 +1,53 @@
+name: CoreMark Benchmark
+
+on: [workflow_dispatch, push]
+
+jobs:
+  coremark:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y build-essential
+      
+    - name: Clone and build CoreMark
+      run: |
+        git clone https://github.com/eembc/coremark.git
+        cd coremark
+        make PORT_DIR=linux
+        # 验证文件生成
+        ls -la coremark.exe
+        file coremark.exe
+        
+    - name: Execute benchmark
+      id: run-benchmark
+      run: |
+        cd coremark
+        timeout 30s ./coremark.exe || true
+        ./coremark.exe > results.txt 2>&1 || ./coremark.exe
+        
+    - name: Prepare release assets
+      run: |
+        cd coremark
+        cp coremark.exe "coremark-$(date +%Y%m%d_%H%M%S).exe"
+        echo "Benchmark completed at $(date)" > README.txt
+        echo "GitHub Runner CoreMark Score" >> README.txt
+        cat results.txt >> README.txt
+        
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      with:
+        name: coremark-results
+        path: coremark/
+        
+    - name: Create Release
+      if: success()
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          coremark/*.exe
+          coremark/README.txt
+          coremark/results.txt
