@@ -36,18 +36,12 @@ jobs:
           - benchmark result
         EOF
         
-    - name: Upload results
-      uses: actions/upload-artifact@v4
-      with:
-        name: coremark-results
-        path: coremark/
-        
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
         name: Release ${{ github.ref_name }}
         tag_name: ${{ github.ref_name }}
-        body_path: release.txt
+        body_path: coremark/release.txt
         files: |
           coremark/coremark-*
           coremark/README.txt
