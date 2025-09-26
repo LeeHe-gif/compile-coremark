@@ -32,7 +32,7 @@ jobs:
     - name: Prepare release assets
       run: |
         cd coremark
-        cp coremark.exe "coremark-$(date +%Y%m%d_%H%M%S).exe"
+        cp coremark.exe "coremark-$(date +%Y%m%d_%H%M%S)"
         echo "Benchmark completed at $(date)" > README.txt
         echo "GitHub Runner CoreMark Score" >> README.txt
         cat results.txt >> README.txt
@@ -44,10 +44,18 @@ jobs:
         path: coremark/
         
     - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
       with:
+        name: Release ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
+        body: |
+          $(date +%Y%m%d_%H%M%S) test result:
+          contains：
+          - coremark
+          - benchmark result
         files: |
           coremark/*.exe
           coremark/README.txt
           coremark/results.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
