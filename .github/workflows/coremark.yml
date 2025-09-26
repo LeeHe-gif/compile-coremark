@@ -21,21 +21,14 @@ jobs:
         # 验证文件生成
         ls -la coremark.exe
         file coremark.exe
-        
-    - name: Execute benchmark
-      id: run-benchmark
-      run: |
-        cd coremark
-        timeout 30s ./coremark.exe || true
-        ./coremark.exe > results.txt 2>&1 || ./coremark.exe
-        
+
     - name: Prepare release assets
       run: |
         cd coremark
         cp coremark.exe "coremark-$(date +%Y%m%d_%H%M%S)"
         echo "Benchmark completed at $(date)" > README.txt
         echo "GitHub Runner CoreMark Score" >> README.txt
-        cat results.txt >> README.txt
+        cat run1.log >> README.txt
         cat <<EOF > release.txt
           # $(date +"%Y-%m-%d %H:%M") test result
           contains：
@@ -58,6 +51,5 @@ jobs:
         files: |
           coremark/coremark-*
           coremark/README.txt
-          coremark/results.txt
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
