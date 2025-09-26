@@ -1,6 +1,6 @@
 name: CoreMark Benchmark
 
-on: [workflow_dispatch, push]
+on: [workflow_dispatch]
 
 jobs:
   coremark:
@@ -36,6 +36,12 @@ jobs:
         echo "Benchmark completed at $(date)" > README.txt
         echo "GitHub Runner CoreMark Score" >> README.txt
         cat results.txt >> README.txt
+        cat <<EOF > release.txt
+          # $(date +"%Y-%m-%d %H:%M") test result
+          contains：
+          - coremark
+          - benchmark result
+        EOF
         
     - name: Upload results
       uses: actions/upload-artifact@v4
@@ -48,13 +54,9 @@ jobs:
       with:
         name: Release ${{ github.ref_name }}
         tag_name: ${{ github.ref_name }}
-        body: |
-          $(date +%Y%m%d_%H%M%S) test result:
-          contains：
-          - coremark
-          - benchmark result
+        body_path: release.txt
         files: |
-          coremark/*.exe
+          coremark/coremark-*
           coremark/README.txt
           coremark/results.txt
       env:
